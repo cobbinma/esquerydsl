@@ -25,7 +25,7 @@ import (
 func main() {
 	body, _ := json.Marshal(esquerydsl.QueryDoc{
 		Index: "some_index",
-		Sort:  []map[string]string{map[string]string{"id": "asc"}},
+		Sort:  []map[string]string{map[string]interface{}{"id": "asc"}},
 		And: []esquerydsl.QueryItem{
 			esquerydsl.QueryItem{
 				Field: "some_index_id",
