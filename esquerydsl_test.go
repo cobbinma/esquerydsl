@@ -9,7 +9,7 @@ import (
 func TestBogusQueryType(t *testing.T) {
 	_, err := json.Marshal(QueryDoc{
 		Index: "some_index",
-		Sort:  []map[string]string{{"id": "asc"}},
+		Sort:  []map[string]interface{}{{"id": "asc"}},
 		And: []QueryItem{
 			{
 				Field: "some_index_id",
@@ -80,7 +80,7 @@ func TestMultiSearchDoc(t *testing.T) {
 func TestAndQuery(t *testing.T) {
 	body, _ := json.Marshal(QueryDoc{
 		Index: "some_index",
-		Sort:  []map[string]string{{"id": "asc"}},
+		Sort:  []map[string]interface{}{{"id": "asc"}},
 		And: []QueryItem{
 			{
 				Field: "some_index_id",
@@ -99,7 +99,7 @@ func TestAndQuery(t *testing.T) {
 func TestNotQuery(t *testing.T) {
 	body, _ := json.Marshal(QueryDoc{
 		Index: "some_index",
-		Sort:  []map[string]string{{"id": "desc"}},
+		Sort:  []map[string]interface{}{{"id": "desc"}},
 		Not: []QueryItem{
 			{
 				Field: "some_index_id",
@@ -118,7 +118,7 @@ func TestNotQuery(t *testing.T) {
 func TestOrQuery(t *testing.T) {
 	body, _ := json.Marshal(QueryDoc{
 		Index: "some_index",
-		Sort:  []map[string]string{{"id": "desc"}},
+		Sort:  []map[string]interface{}{{"id": "desc"}},
 		Or: []QueryItem{
 			{
 				Field: "some_index_id",
@@ -231,7 +231,6 @@ func TestHasChildQuery(t *testing.T) {
 			},
 		},
 	})
-
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err.Error())
 	}
@@ -260,5 +259,30 @@ func TestHasChildQueryInvalid(t *testing.T) {
 	var queryTypeErr *QueryTypeErr
 	if !errors.As(err, &queryTypeErr) {
 		t.Errorf("\nUnexpected error: %v", err)
+	}
+}
+
+func TestScriptSort(t *testing.T) {
+	scriptSort := map[string]interface{}{
+		"_script": map[string]interface{}{
+			"type": "string",
+			"script": map[string]interface{}{
+				"source": "String name = doc['name'].value; return name.startsWith('name.prefix.') ? name.substring(12) : name;",
+				"lang":   "painless",
+			},
+			"order": "asc",
+		},
+	}
+	body, err := json.Marshal(QueryDoc{
+		Index: "some_index",
+		Sort:  []map[string]interface{}{scriptSort},
+	})
+	if err != nil {
+		t.Errorf("\nUnexpected error: %v", err)
+	}
+
+	expected := `{"query":{"bool":{}},"sort":[{"_script":{"order":"asc","script":{"lang":"painless","source":"String name = doc['name'].value; return name.startsWith('name.prefix.') ? name.substring(12) : name;"},"type":"string"}}]}`
+	if string(body) != expected {
+		t.Errorf("\nWant: %q\nHave: %q", expected, string(body))
 	}
 }

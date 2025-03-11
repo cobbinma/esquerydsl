@@ -65,7 +65,7 @@ type QueryDoc struct {
 	Index       string
 	Size        int
 	From        int
-	Sort        []map[string]string
+	Sort        []map[string]interface{}
 	SearchAfter []interface{}
 	And         []QueryItem
 	Not         []QueryItem
@@ -167,11 +167,11 @@ func WrapQueryItems(itemType string, items ...QueryItem) QueryItem {
 //	    }
 //	}
 type queryReqDoc struct {
-	Query       queryWrap           `json:"query,omitempty"`
-	Size        int                 `json:"size,omitempty"`
-	From        int                 `json:"from,omitempty"`
-	Sort        []map[string]string `json:"sort,omitempty"`
-	SearchAfter []interface{}       `json:"search_after,omitempty"`
+	Query       queryWrap                `json:"query,omitempty"`
+	Size        int                      `json:"size,omitempty"`
+	From        int                      `json:"from,omitempty"`
+	Sort        []map[string]interface{} `json:"sort,omitempty"`
+	SearchAfter []interface{}            `json:"search_after,omitempty"`
 }
 
 type queryWrap struct {
